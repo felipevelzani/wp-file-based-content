@@ -1,0 +1,11 @@
+{
+    "name": "velzani/file-based-content",
+    "description": "File-based Content (FBC) for WordPress",
+    "type": "wordpress-plugin",
+    "require": {
+        "erusev/parsedown": "*"
+    },
+    "autoload": {
+        "files": []
+    }
+}
