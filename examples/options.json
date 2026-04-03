@@ -1,0 +1,160 @@
+{
+  "$schema": "./options-schema.json",
+  "_comment": "WordPress options managed via file-based content sync",
+  
+  "site": {
+    "blogname": "My WordPress Site",
+    "blogdescription": "Just another WordPress site",
+    "siteurl": "https://example.com",
+    "home": "https://example.com",
+    "admin_email": "admin@example.com",
+    "timezone_string": "America/New_York",
+    "date_format": "F j, Y",
+    "time_format": "g:i a",
+    "start_of_week": 0,
+    "WPLANG": "en_US"
+  },
+
+  "reading": {
+    "posts_per_page": 10,
+    "posts_per_rss": 10,
+    "show_on_front": "page",
+    "page_on_front": "home",
+    "page_for_posts": "blog",
+    "blog_public": 1
+  },
+
+  "writing": {
+    "default_category": "uncategorized",
+    "default_post_format": "standard"
+  },
+
+  "discussion": {
+    "default_pingback_flag": 0,
+    "default_ping_status": "closed",
+    "default_comment_status": "open",
+    "comment_registration": 0,
+    "close_comments_for_old_posts": 1,
+    "close_comments_days_old": 14,
+    "thread_comments": 1,
+    "thread_comments_depth": 5,
+    "comments_per_page": 50,
+    "comment_order": "asc",
+    "comment_moderation": 0,
+    "require_name_email": 1
+  },
+
+  "media": {
+    "thumbnail_size_w": 150,
+    "thumbnail_size_h": 150,
+    "thumbnail_crop": 1,
+    "medium_size_w": 300,
+    "medium_size_h": 300,
+    "large_size_w": 1024,
+    "large_size_h": 1024,
+    "uploads_use_yearmonth_folders": 1
+  },
+
+  "permalinks": {
+    "permalink_structure": "/%postname%/",
+    "category_base": "category",
+    "tag_base": "tag"
+  },
+
+  "plugins": {
+    "active_plugins": [
+      "akismet/akismet.php",
+      "woocommerce/woocommerce.php",
+      "wordpress-seo/wp-seo.php",
+      "contact-form-7/wp-contact-form-7.php"
+    ]
+  },
+
+  "theme": {
+    "template": "flavor",
+    "stylesheet": "flavor-child",
+    "current_theme": "Flavor Child"
+  },
+
+  "woocommerce": {
+    "_enabled": true,
+    "_comment": "WooCommerce settings - only applied if WooCommerce is active",
+    
+    "store": {
+      "woocommerce_store_address": "123 Main Street",
+      "woocommerce_store_address_2": "Suite 100",
+      "woocommerce_store_city": "New York",
+      "woocommerce_store_postcode": "10001",
+      "woocommerce_default_country": "US:NY",
+      "woocommerce_currency": "USD",
+      "woocommerce_currency_pos": "left",
+      "woocommerce_price_thousand_sep": ",",
+      "woocommerce_price_decimal_sep": ".",
+      "woocommerce_price_num_decimals": 2
+    },
+
+    "products": {
+      "woocommerce_weight_unit": "lbs",
+      "woocommerce_dimension_unit": "in",
+      "woocommerce_enable_reviews": "yes",
+      "woocommerce_review_rating_required": "yes",
+      "woocommerce_manage_stock": "yes",
+      "woocommerce_stock_format": "low_amount",
+      "woocommerce_notify_low_stock_amount": 2,
+      "woocommerce_notify_no_stock_amount": 0
+    },
+
+    "shipping": {
+      "woocommerce_ship_to_countries": "specific",
+      "woocommerce_specific_ship_to_countries": ["US", "CA", "MX"],
+      "woocommerce_enable_shipping_calc": "yes",
+      "woocommerce_shipping_cost_requires_address": "yes"
+    },
+
+    "checkout": {
+      "woocommerce_enable_guest_checkout": "yes",
+      "woocommerce_enable_checkout_login_reminder": "yes",
+      "woocommerce_enable_signup_and_login_from_checkout": "yes",
+      "woocommerce_checkout_privacy_policy_text": "Your personal data will be used to process your order.",
+      "woocommerce_terms_page_id": "terms-and-conditions"
+    },
+
+    "tax": {
+      "woocommerce_calc_taxes": "yes",
+      "woocommerce_prices_include_tax": "no",
+      "woocommerce_tax_based_on": "shipping",
+      "woocommerce_tax_round_at_subtotal": "no",
+      "woocommerce_tax_display_shop": "excl",
+      "woocommerce_tax_display_cart": "excl"
+    },
+
+    "emails": {
+      "woocommerce_email_from_name": "My Store",
+      "woocommerce_email_from_address": "orders@example.com"
+    }
+  },
+
+  "_meta": {
+    "version": "1.0.0",
+    "last_modified": "2026-04-03",
+    "sync_mode": "merge",
+    "protected_options": [
+      "siteurl",
+      "home"
+    ],
+    "environments": {
+      "production": {
+        "site.siteurl": "https://example.com",
+        "site.home": "https://example.com"
+      },
+      "staging": {
+        "site.siteurl": "https://staging.example.com",
+        "site.home": "https://staging.example.com"
+      },
+      "development": {
+        "site.siteurl": "http://localhost:8888",
+        "site.home": "http://localhost:8888"
+      }
+    }
+  }
+}

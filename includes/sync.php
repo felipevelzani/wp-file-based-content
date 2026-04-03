@@ -483,8 +483,8 @@ function fbcwp_get_site_domain() {
 function fbcwp_get_valid_statuses() {
     return [
         'published' => 'publish',
+        'publish' => 'publish',
         'draft' => 'draft',
-        'pending' => 'pending',
         'private' => 'private',
     ];
 }

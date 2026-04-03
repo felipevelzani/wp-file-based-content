@@ -2,7 +2,7 @@
 /**
  * Plugin Name: File-based Content (FBC)
  * Description: Manage post content via Git-friendly Markdown files.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Velzani
  * License: GPL-2.0-or-later
  * Text Domain: file-based-content
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('FBCWP_VERSION', '1.0.0');
+define('FBCWP_VERSION', '1.1.0');
 define('FBCWP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('FBCWP_PLUGIN_FILE', __FILE__);
 define('FBCWP_META_KEY', '_fbcwp_source_md');

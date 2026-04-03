@@ -30,6 +30,54 @@ your-content-plugin/
 
 Each post or page is a folder named after the desired slug. The folder contains an `index.md` file and any co-located assets (images, PDFs, etc.) referenced within it.
 
+### Status Folders
+
+Content can be organized by status using subdirectories:
+
+```
+content/
+└── posts/
+    ├── published/
+    │   └── my-live-post/
+    │       └── index.md
+    ├── draft/
+    │   └── work-in-progress/
+    │       └── index.md
+    ├── pending/
+    │   └── awaiting-review/
+    │       └── index.md
+    └── private/
+        └── internal-notes/
+            └── index.md
+```
+
+| Folder                  | WordPress Status |
+|-------------------------|------------------|
+| `published` or `publish`| `publish`        |
+| `draft`                 | `draft`          |
+| `private`               | `private`        |
+
+Posts placed directly in the post type folder (without a status subfolder) default to `publish` status, or use the `status` frontmatter field.
+
+### Multi-Site Support (Domain Directories)
+
+For managing content for multiple sites in a single repository, FBC supports domain-specific directories:
+
+```
+content/
+├── example.com/
+│   ├── posts/
+│   └── pages/
+├── staging.example.com/
+│   ├── posts/
+│   └── pages/
+└── posts/   # fallback if no domain match
+```
+
+FBC detects the current site's domain and looks for a matching subdirectory. If found, it uses that as the content root. Otherwise, it falls back to the base content path.
+
+> **Note:** WordPress installations with subdirectory paths (e.g., `example.com/site1/`) are not currently supported. Only domain/subdomain-based separation works at this time. Subdirectory multisite support may be added in a future release.
+
 ## Frontmatter
 
 YAML frontmatter at the top of each `index.md` controls post metadata:
@@ -96,22 +144,14 @@ Navigate to **Settings → FBC** in the WordPress dashboard. The admin page show
 If you already have posts in WordPress and want to migrate to file-based content, use the **Generate & Activate** form in the admin. FBC will:
 
 1. Create a new content plugin in `wp-content/plugins/`.
-2. Export each published post as `index.md` with frontmatter.
-3. Copy attached media (images, featured images) into each post's folder.
-4. Rewrite absolute upload URLs to relative file references.
-5. Activate the new content plugin automatically.
+2. Export posts of all statuses (published, draft, pending, private) as `index.md` with frontmatter.
+3. Organize exported content into status-specific folders (`published/`, `draft/`, etc.).
+4. Copy attached media (images, featured images) into each post's folder.
+5. Rewrite absolute upload URLs to relative file references.
+6. Activate the new content plugin automatically.
 
-## Requirements
+## Compatibility
 
-- WordPress 5.0+
-- PHP 7.4+
-- [Parsedown](https://github.com/erusev/parsedown) (installed via Composer)
-
-## Installation
-
-```bash
-cd wp-content/plugins/file-based-content
-composer install
-```
-
-Activate the plugin from the WordPress admin. Then either create a content plugin manually or use the built-in generator to export existing content.
+- **WordPress 5.0+** and **PHP 7.4+**
+- **Bedrock** — FBC uses dynamic uploads path detection, fully compatible with Bedrock's non-standard directory structure.
+- **[Parsedown](https://github.com/erusev/parsedown)** (installed via Composer)

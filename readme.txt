@@ -4,7 +4,7 @@ Tags: markdown, git, content, sync, headless
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,30 @@ Each post is a folder containing an `index.md` file and any co-located assets:
     └── pages/
         └── about/
             └── index.md
+
+**Status Folders (New in 1.1.0):**
+
+Organize content by status using subdirectories:
+
+    content/posts/
+    ├── published/
+    │   └── live-post/
+    ├── draft/
+    │   └── work-in-progress/
+    ├── pending/
+    └── private/
+
+**Multi-Site Support (New in 1.1.0):**
+
+Manage content for multiple sites by using domain-specific directories:
+
+    content/
+    ├── example.com/
+    │   └── posts/
+    └── staging.example.com/
+        └── posts/
+
+FBC auto-detects the site domain and uses matching content.
 
 **Frontmatter Example:**
 
@@ -102,6 +126,12 @@ Any public post type. Configure via the `fbcwp_post_types` filter or the admin U
 After each sync, when a content path is configured (e.g. the content plugin is active), any published post in a configured post type whose slug is missing from the content scan is moved to draft — including posts created only in WordPress, not only posts previously synced from files. If no content path is available, published posts are not changed this way.
 
 == Changelog ==
+
+= 1.1.0 =
+* Status folder organization — content can be organized into `published/`, `draft/`, `pending/`, and `private/` subdirectories
+* Multi-site support — domain-specific content directories (e.g., `content/example.com/posts/`)
+* Enhanced export — now exports all post statuses (not just published) into status-organized folders
+* Bedrock compatibility — dynamic uploads path detection for non-standard directory structures
 
 = 1.0.0 =
 * Initial release
