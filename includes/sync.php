@@ -477,6 +477,25 @@ function fbcwp_get_site_domain() {
 }
 
 // =============================================================================
+// STATUS FOLDER MAPPING
+// =============================================================================
+
+function fbcwp_get_valid_statuses() {
+    return [
+        'published' => 'publish',
+        'draft' => 'draft',
+        'pending' => 'pending',
+        'private' => 'private',
+    ];
+}
+
+function fbcwp_status_to_folder($wp_status) {
+    $statuses = fbcwp_get_valid_statuses();
+    $folder = array_search($wp_status, $statuses, true);
+    return $folder !== false ? $folder : 'published';
+}
+
+// =============================================================================
 // CONTENT SCANNING
 // =============================================================================
 
@@ -496,6 +515,7 @@ function fbcwp_scan_content() {
     }
 
     $post_types = fbcwp_get_post_types();
+    $valid_statuses = fbcwp_get_valid_statuses();
     $items = [];
 
     foreach ($post_types as $post_type) {
@@ -507,15 +527,36 @@ function fbcwp_scan_content() {
 
         $dirs = glob($type_path . '/*', GLOB_ONLYDIR);
         foreach ($dirs as $dir) {
-            $md_file = $dir . '/index.md';
-            if (!file_exists($md_file)) continue;
+            $dir_name = basename($dir);
+            
+            if (isset($valid_statuses[$dir_name])) {
+                $status_folder = $dir_name;
+                $wp_status = $valid_statuses[$dir_name];
+                $post_dirs = glob($dir . '/*', GLOB_ONLYDIR);
+                
+                foreach ($post_dirs as $post_dir) {
+                    $md_file = $post_dir . '/index.md';
+                    if (!file_exists($md_file)) continue;
 
-            $items[] = [
-                'post_type' => $post_type,
-                'slug' => basename($dir),
-                'path' => $dir,
-                'md_file' => $md_file,
-            ];
+                    $items[] = [
+                        'post_type' => $post_type,
+                        'slug' => basename($post_dir),
+                        'path' => $post_dir,
+                        'md_file' => $md_file,
+                        'folder_status' => $wp_status,
+                    ];
+                }
+            } else {
+                $md_file = $dir . '/index.md';
+                if (!file_exists($md_file)) continue;
+
+                $items[] = [
+                    'post_type' => $post_type,
+                    'slug' => $dir_name,
+                    'path' => $dir,
+                    'md_file' => $md_file,
+                ];
+            }
         }
     }
 
@@ -640,7 +681,7 @@ function fbcwp_sync_post($item) {
         'post_name' => $item['slug'],
         'post_content' => $block_content,
         'post_title' => $parsed['frontmatter']['title'] ?? ucwords(str_replace('-', ' ', $item['slug'])),
-        'post_status' => $parsed['frontmatter']['status'] ?? 'publish',
+        'post_status' => $item['folder_status'] ?? $parsed['frontmatter']['status'] ?? 'publish',
         'post_excerpt' => $parsed['frontmatter']['excerpt'] ?? '',
     ];
     

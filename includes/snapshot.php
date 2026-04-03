@@ -60,12 +60,16 @@ function fbcwp_generate_content_plugin($plugin_name, $post_types) {
         
         $posts = get_posts([
             'post_type' => $post_type,
-            'post_status' => 'publish',
+            'post_status' => ['publish', 'draft', 'pending', 'private'],
             'numberposts' => -1,
         ]);
         
         foreach ($posts as $post) {
-            $post_path = $type_path . '/' . $post->post_name;
+            $status_folder = fbcwp_status_to_folder($post->post_status);
+            $status_path = $type_path . '/' . $status_folder;
+            wp_mkdir_p($status_path);
+            
+            $post_path = $status_path . '/' . $post->post_name;
             wp_mkdir_p($post_path);
             
             $attachment_map = fbcwp_export_attachments($post->post_content, $post_path);
