@@ -458,6 +458,25 @@ function fbcwp_make_quote_block($text) {
 }
 
 // =============================================================================
+// DOMAIN DETECTION
+// =============================================================================
+
+function fbcwp_get_site_domain() {
+    $site_url = get_site_url();
+    $host = wp_parse_url($site_url, PHP_URL_HOST);
+    
+    if (!$host) {
+        return null;
+    }
+    
+    if (strpos($host, 'www.') === 0) {
+        $host = substr($host, 4);
+    }
+    
+    return $host;
+}
+
+// =============================================================================
 // CONTENT SCANNING
 // =============================================================================
 
@@ -467,6 +486,15 @@ function fbcwp_scan_content() {
         return [];
     }
 
+    $domain = fbcwp_get_site_domain();
+    $domain_path = $content_path . '/' . $domain;
+    
+    if ($domain && is_dir($domain_path)) {
+        $base_path = $domain_path;
+    } else {
+        $base_path = $content_path;
+    }
+
     $post_types = fbcwp_get_post_types();
     $items = [];
 
@@ -474,7 +502,7 @@ function fbcwp_scan_content() {
         $folder = $post_type === 'post' ? 'posts' : $post_type . 's';
         if ($post_type === 'page') $folder = 'pages';
         
-        $type_path = $content_path . '/' . $folder;
+        $type_path = $base_path . '/' . $folder;
         if (!is_dir($type_path)) continue;
 
         $dirs = glob($type_path . '/*', GLOB_ONLYDIR);
