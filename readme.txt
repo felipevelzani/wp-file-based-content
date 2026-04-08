@@ -1,5 +1,5 @@
 === File-based Content (FBC) ===
-Contributors: velzani
+Contributors: felipevelzani
 Tags: markdown, git, content, sync, headless
 Requires at least: 5.0
 Tested up to: 6.9
