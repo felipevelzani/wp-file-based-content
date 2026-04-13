@@ -458,6 +458,44 @@ function fbcwp_make_quote_block($text) {
 }
 
 // =============================================================================
+// DOMAIN DETECTION
+// =============================================================================
+
+function fbcwp_get_site_domain() {
+    $site_url = get_site_url();
+    $host = wp_parse_url($site_url, PHP_URL_HOST);
+    
+    if (!$host) {
+        return null;
+    }
+    
+    if (strpos($host, 'www.') === 0) {
+        $host = substr($host, 4);
+    }
+    
+    return $host;
+}
+
+// =============================================================================
+// STATUS FOLDER MAPPING
+// =============================================================================
+
+function fbcwp_get_valid_statuses() {
+    return [
+        'published' => 'publish',
+        'publish' => 'publish',
+        'draft' => 'draft',
+        'private' => 'private',
+    ];
+}
+
+function fbcwp_status_to_folder($wp_status) {
+    $statuses = fbcwp_get_valid_statuses();
+    $folder = array_search($wp_status, $statuses, true);
+    return $folder !== false ? $folder : 'published';
+}
+
+// =============================================================================
 // CONTENT SCANNING
 // =============================================================================
 
@@ -467,27 +505,58 @@ function fbcwp_scan_content() {
         return [];
     }
 
+    $domain = fbcwp_get_site_domain();
+    $domain_path = $content_path . '/' . $domain;
+    
+    if ($domain && is_dir($domain_path)) {
+        $base_path = $domain_path;
+    } else {
+        $base_path = $content_path;
+    }
+
     $post_types = fbcwp_get_post_types();
+    $valid_statuses = fbcwp_get_valid_statuses();
     $items = [];
 
     foreach ($post_types as $post_type) {
         $folder = $post_type === 'post' ? 'posts' : $post_type . 's';
         if ($post_type === 'page') $folder = 'pages';
         
-        $type_path = $content_path . '/' . $folder;
+        $type_path = $base_path . '/' . $folder;
         if (!is_dir($type_path)) continue;
 
         $dirs = glob($type_path . '/*', GLOB_ONLYDIR);
         foreach ($dirs as $dir) {
-            $md_file = $dir . '/index.md';
-            if (!file_exists($md_file)) continue;
+            $dir_name = basename($dir);
+            
+            if (isset($valid_statuses[$dir_name])) {
+                $status_folder = $dir_name;
+                $wp_status = $valid_statuses[$dir_name];
+                $post_dirs = glob($dir . '/*', GLOB_ONLYDIR);
+                
+                foreach ($post_dirs as $post_dir) {
+                    $md_file = $post_dir . '/index.md';
+                    if (!file_exists($md_file)) continue;
 
-            $items[] = [
-                'post_type' => $post_type,
-                'slug' => basename($dir),
-                'path' => $dir,
-                'md_file' => $md_file,
-            ];
+                    $items[] = [
+                        'post_type' => $post_type,
+                        'slug' => basename($post_dir),
+                        'path' => $post_dir,
+                        'md_file' => $md_file,
+                        'folder_status' => $wp_status,
+                    ];
+                }
+            } else {
+                $md_file = $dir . '/index.md';
+                if (!file_exists($md_file)) continue;
+
+                $items[] = [
+                    'post_type' => $post_type,
+                    'slug' => $dir_name,
+                    'path' => $dir,
+                    'md_file' => $md_file,
+                ];
+            }
         }
     }
 
@@ -612,7 +681,7 @@ function fbcwp_sync_post($item) {
         'post_name' => $item['slug'],
         'post_content' => $block_content,
         'post_title' => $parsed['frontmatter']['title'] ?? ucwords(str_replace('-', ' ', $item['slug'])),
-        'post_status' => $parsed['frontmatter']['status'] ?? 'publish',
+        'post_status' => $item['folder_status'] ?? $parsed['frontmatter']['status'] ?? 'publish',
         'post_excerpt' => $parsed['frontmatter']['excerpt'] ?? '',
     ];
     

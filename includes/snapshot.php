@@ -60,12 +60,16 @@ function fbcwp_generate_content_plugin($plugin_name, $post_types) {
         
         $posts = get_posts([
             'post_type' => $post_type,
-            'post_status' => 'publish',
+            'post_status' => ['publish', 'draft', 'pending', 'private'],
             'numberposts' => -1,
         ]);
         
         foreach ($posts as $post) {
-            $post_path = $type_path . '/' . $post->post_name;
+            $status_folder = fbcwp_status_to_folder($post->post_status);
+            $status_path = $type_path . '/' . $status_folder;
+            wp_mkdir_p($status_path);
+            
+            $post_path = $status_path . '/' . $post->post_name;
             wp_mkdir_p($post_path);
             
             $attachment_map = fbcwp_export_attachments($post->post_content, $post_path);
@@ -135,19 +139,27 @@ function fbcwp_export_attachments($content, $post_path) {
     return $attachment_map;
 }
 
+function fbcwp_get_uploads_path_segment() {
+    $upload_dir = wp_upload_dir();
+    $baseurl = $upload_dir['baseurl'];
+    $parsed = wp_parse_url($baseurl);
+    return isset($parsed['path']) ? $parsed['path'] : '/wp-content/uploads';
+}
+
 function fbcwp_extract_attachment_urls($content, $site_url) {
+    $uploads_path = fbcwp_get_uploads_path_segment();
     $urls = [];
     
     preg_match_all('/src=["\']([^"\']+)["\']/', $content, $src_matches);
     foreach ($src_matches[1] as $url) {
-        if (strpos($url, $site_url) !== false || strpos($url, '/wp-content/uploads/') !== false) {
+        if (strpos($url, $site_url) !== false || strpos($url, $uploads_path) !== false) {
             $urls[] = $url;
         }
     }
     
     preg_match_all('/href=["\']([^"\']+)["\']/', $content, $href_matches);
     foreach ($href_matches[1] as $url) {
-        if (strpos($url, '/wp-content/uploads/') !== false) {
+        if (strpos($url, $uploads_path) !== false) {
             $urls[] = $url;
         }
     }
@@ -156,13 +168,13 @@ function fbcwp_extract_attachment_urls($content, $site_url) {
     foreach ($block_matches[1] as $json_str) {
         $attrs = json_decode($json_str, true);
         if ($attrs) {
-            $urls = array_merge($urls, fbcwp_extract_urls_from_attrs($attrs, $site_url));
+            $urls = array_merge($urls, fbcwp_extract_urls_from_attrs($attrs, $site_url, $uploads_path));
         }
     }
     
     preg_match_all('/url\(["\']?([^"\')\s]+)["\']?\)/', $content, $css_matches);
     foreach ($css_matches[1] as $url) {
-        if (strpos($url, $site_url) !== false || strpos($url, '/wp-content/uploads/') !== false) {
+        if (strpos($url, $site_url) !== false || strpos($url, $uploads_path) !== false) {
             $urls[] = $url;
         }
     }
@@ -170,18 +182,21 @@ function fbcwp_extract_attachment_urls($content, $site_url) {
     return array_unique($urls);
 }
 
-function fbcwp_extract_urls_from_attrs($attrs, $site_url) {
+function fbcwp_extract_urls_from_attrs($attrs, $site_url, $uploads_path = null) {
+    if ($uploads_path === null) {
+        $uploads_path = fbcwp_get_uploads_path_segment();
+    }
     $urls = [];
     
     foreach ($attrs as $key => $value) {
         if (is_string($value)) {
-            if (strpos($value, $site_url) !== false || strpos($value, '/wp-content/uploads/') !== false) {
+            if (strpos($value, $site_url) !== false || strpos($value, $uploads_path) !== false) {
                 if (preg_match('/\.(jpg|jpeg|png|gif|webp|svg|pdf|mp4|webm|ogg|mp3|wav|doc|docx|xls|xlsx|ppt|pptx|zip)$/i', $value)) {
                     $urls[] = $value;
                 }
             }
         } elseif (is_array($value)) {
-            $urls = array_merge($urls, fbcwp_extract_urls_from_attrs($value, $site_url));
+            $urls = array_merge($urls, fbcwp_extract_urls_from_attrs($value, $site_url, $uploads_path));
         }
     }
     
